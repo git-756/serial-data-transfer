@@ -59,8 +59,17 @@ python serial_xfer.py -p COM5 -b 115200 get  results\log.csv --outdir C:\recv   
 1. 配線を確認し、まず `-b 115200`、RTS/CTS なしで `ls` が返るか確認。
 2. 小さいファイルを `put` → Jetson 側で内容を確認。
 3. `get` で戻して一致を確認。
-4. 速度を上げる: `-b 460800` → `921600`（両側同じ値）。高速時は `--chunk 8192` と Latency Timer 1ms が効きます。
-5. 最後に必要なら `--rtscts`（両側に付ける）。
+4. 速度を上げる: `-b 460800` → `921600` → `2000000` → `3000000`（両側同じ値）。高速時は `--chunk` を大きく（最大 59000 程度）し、Latency Timer を 1ms にします。
+5. 1 Mbps を超えるなら `--rtscts`（両側に付ける）。Jetson の UART は受信 FIFO があふれやすく（overrun）、フロー制御なしだと再送が増えて Windows → Jetson 方向が遅くなります。
+
+### 実測値（Jetson AGX Orin ⇔ FT232R、Jetson 自身の USB に挿して測定、4 MiB）
+| 設定 | put (→Jetson) | get (Jetson→) |
+|---|---|---|
+| `-b 921600 --chunk 8192` | 75 KiB/s | 75 KiB/s |
+| `-b 3000000 --chunk 59000`（RTS/CTS なし） | 189 KiB/s | 265 KiB/s |
+| `-b 3000000 --chunk 59000 --rtscts` | **263 KiB/s** | **265 KiB/s** |
+
+3 Mbps は FT232R の上限で、理論値 293 KiB/s の約 90% が出ています。
 
 ### 困ったとき
 | 症状 | 確認 |

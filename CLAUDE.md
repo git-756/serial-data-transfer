@@ -40,6 +40,16 @@ GET要求のACKが落ちた場合は START受信を暗黙ACKとして扱う（�
   - 1 フレームあたり約 17ms の待ちが乗っている。FTDI の latency_timer（Linux 既定 16ms）が主因と思われる（未検証、変更に root 必要）。
   - CLI 修正: `-p` などの共通オプションがサブコマンドの前に書けず必ずエラーになっていた（README の書き方が動かない）。前後どちらでも可にした。
   - Windows PC との接続、`--rtscts` はまだ試していない。
+- 2026-11-12: 最高速度を探索（同じく Jetson 自身の USB に FT232R を挿して測定）。
+  - 生データ 256KiB の連続送信: 3 Mbps（FT232R の上限）までビット誤り（frame/parity）は 0。
+    ただし FT232R → Jetson 方向で ttyTHS1 の **受信 overrun** がときどき起きる（TIOCGICOUNT で確認）。
+  - RTS/CTS の配線: Jetson RTS(Pin11) → FT232R CTS は動作する。FT232R RTS → Jetson CTS(Pin36) は常に「アサート」と読める
+    （未接続か、検出できていない。未確認）。Jetson → FT232R 方向は overrun が出ないので、実用上は問題ない。
+  - `--rtscts` を付けると、4 MiB×4 回で overrun 0（付けないと同じ量で 462 回）。
+  - **最速設定: `-b 3000000 --chunk 59000 --rtscts` で put 263 / get 265 KiB/s**（理論値 293 の約 90%）。RTS/CTS なしだと put 189 KiB/s。
+  - 残りの約 10% は、フレームごとのストップ&ウェイト待ち（約 20ms、FTDI の latency_timer 16ms が主）。
+    latency_timer=1 やスライディングウィンドウ化でもう少し伸びる見込み（未検証）。
+  - Windows PC での確認はまだしていない。
 
 ## 次にやること
 1. 実機でループバック試験（Pin8-Pin10短絡）→ AE-TTL-232R接続で `ls` 疎通確認（115200, RTS/CTSなし）
