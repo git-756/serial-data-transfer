@@ -6,8 +6,13 @@ AE-TTL-232R（FT232RQ, USB-microB〜USB-A）でWindows PCとJetsonのGPIO UART(/
 
 ## ファイル（uv 管理。`uv sync` → `uv run serial-xfer ...`）
 - `src/serial_data_transfer/serial_xfer.py` : 転送ツール本体（Windows/Jetson共通、依存は pyserial のみ）。コマンド `serial-xfer`。サブコマンド serve / put / get / ls。単体ファイルとしても動く
+- `src/serial_data_transfer/gui.py` : Windows 向けの転送画面（tkinter）。コマンド `serial-xfer-gui`（gui-scripts なのでコンソールなし）。
+  送信、Jetson 側一覧の閲覧と受信、起動引数のファイルを送信（「送る」/ドロップ）、`--create-shortcuts`
 - `src/serial_data_transfer/loopback.py` : Pin8-Pin10 短絡ループバック試験。コマンド `serial-loopback`
+- `windows/setup.bat` : Windows のワンクリックセットアップ（uv → ZIP URL から tool install → ショートカット作成 → GUI 起動）。CRLF
+- `deploy/install-jetson-service.sh` : Jetson で serve を systemd サービス化（`serial-xfer.service`、要 sudo）
 - `tests/test_serial_xfer.py` : ノイズ注入した擬似回線での自動テスト（実機不要）。`uv run pytest`（`-m "not slow"` で短縮）
+- `tests/test_gui_client.py` : GUI の転送ロジック（Client）のテスト（画面なし）
 - `README.md` : 配線・セットアップ・使い方・Windows への配布方法（wheel / zip / git）
 
 ## 配線（確定事項）
@@ -51,6 +56,10 @@ GET要求のACKが落ちた場合は START受信を暗黙ACKとして扱う（�
   - 残りの約 10% は、フレームごとのストップ&ウェイト待ち（約 20ms、FTDI の latency_timer 16ms が主）。
     latency_timer=1 やスライディングウィンドウ化でもう少し伸びる見込み（未検証）。
   - Windows PC での確認はまだしていない。
+- 2026-11-13: **Windows PC ⇔ Jetson の実機で確認**（会社の Windows PC に ZIP の URL から uv tool install）。
+  - Windows → Jetson（put）: 10 MB の bin を 38 秒で送信できた。約 270 KiB/s で、Jetson どうしの最速値（263 KiB/s）と同等。
+    設定は README の最速設定（3 Mbps / chunk 59000 / RTS/CTS）と想定しているが、確認はしていない。
+  - Jetson → Windows: 未確認。
 
 ## 次にやること
 1. 実機でループバック試験（Pin8-Pin10短絡）→ AE-TTL-232R接続で `ls` 疎通確認（115200, RTS/CTSなし）
@@ -62,3 +71,9 @@ GET要求のACKが落ちた場合は START受信を暗黙ACKとして扱う（�
 ## 注意
 - Jetsonで /dev/ttyTHS1 を使う前に nvgetty の停止と dialout グループ追加が必要な場合あり（README参照）
 - 実機の結果（速度・エラー・pinmux）が分かったらこのファイルの「現状」を更新すること
+- 2026-11-13: 送受信を簡単にするため、Jetson 常駐サービスと Windows 用 GUI を追加。
+  - Jetson→Windows（get）は 10 MB / 49.6 秒（約 206 KiB/s）でエラーはなし。Windows→Jetson より遅いが、ユーザーは速度より確実性を重視するので対応は保留。
+    原因は Pin36（FT RTS→Jetson CTS）が効かないことによる再送と推測しているが、未確認。
+  - GUI は Jetson 上で socat の仮想シリアルを使い、本物の serve 相手に一覧・送信・フォルダ移動・受信を確認（ファイル一致）。**Windows 実機ではまだ動かしていない**。
+  - サービス用スクリプトは unit の生成と `systemd-analyze verify` までは確認済み。実際のインストール（sudo）はまだ。
+  - コア側の変更: Sender/Receiver に progress コールバックを追加。コンソールでないとき（pythonw、systemd）は進捗を出さない（`_console()`）。

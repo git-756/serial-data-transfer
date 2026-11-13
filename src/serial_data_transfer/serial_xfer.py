@@ -154,6 +154,16 @@ def sha256_file(path):
     return h.digest()
 
 
+def _console():
+    """進捗(\r 上書き)を出してよいコンソールなら stdout を返す。
+    pythonw (Windows GUI) では stdout が None、systemd ではパイプなので出さない。"""
+    out = sys.stdout
+    try:
+        return out if out is not None and out.isatty() else None
+    except Exception:
+        return None
+
+
 def fmt_size(n):
     for u in ("B", "KB", "MB", "GB"):
         if n < 1024 or u == "GB":
@@ -189,8 +199,10 @@ def _join_rel(dest, rel):
 # 送信側
 # --------------------------------------------------------------------------
 class Sender:
-    def __init__(self, link, chunk=2048, timeout=2.0, tries=10, log=print):
+    def __init__(self, link, chunk=2048, timeout=2.0, tries=10, log=print, progress=None):
+        """progress(name, pos, size): 進捗コールバック。None ならコンソールに表示。"""
         self.link = link
+        self.progress = progress
         self.chunk = max(64, min(chunk, MAX_PAYLOAD - 16))
         self.timeout = timeout
         self.tries = tries
@@ -253,19 +265,26 @@ class Sender:
                 pos = min(new_pos, size)
                 self._progress(relname, pos, size, (pos - start_pos), t0)
         status, _, _ = self.request(T_END, sha)
-        sys.stdout.write("\r")
+        con = _console() if self.progress is None else None
+        if con:
+            con.write("\r")
         if status != ST_OK:
             raise TransferError("%s: %s" % (relname, ST_TEXT.get(status, status)))
         dt = max(time.monotonic() - t0, 1e-6)
-        self.log("\r送信完了: %s (%s, %.1f KB/s)%s" % (
-            relname, fmt_size(size), (size - start_pos) / 1024.0 / dt, " " * 20))
+        self.log("送信完了: %s (%s, %.1f KB/s)%s" % (
+            relname, fmt_size(size), (size - start_pos) / 1024.0 / dt, " " * 20 if con else ""))
 
     def _progress(self, name, pos, size, sent, t0):
+        if self.progress is not None:
+            return self.progress(name, pos, size)
+        con = _console()
+        if con is None:
+            return
         dt = max(time.monotonic() - t0, 1e-6)
         pct = 100.0 * pos / size if size else 100.0
-        sys.stdout.write("\r  %s  %5.1f%%  %s/%s  %.1f KB/s   " % (
+        con.write("\r  %s  %5.1f%%  %s/%s  %.1f KB/s   " % (
             name[-40:], pct, fmt_size(pos), fmt_size(size), sent / 1024.0 / dt))
-        sys.stdout.flush()
+        con.flush()
 
     def send_files(self, files):
         for full, rel in files:
@@ -284,8 +303,11 @@ class _Cur:
 
 
 class Receiver:
-    def __init__(self, link, root, chunk=2048, once=False, allow_serve=True, log=print):
+    def __init__(self, link, root, chunk=2048, once=False, allow_serve=True, log=print,
+                 progress=None):
+        """progress(name, received, size): 受信の進捗コールバック (任意)。"""
         self.link = link
+        self.progress = progress
         self.root = os.path.abspath(root)
         self.chunk = chunk
         self.once = once
@@ -399,6 +421,8 @@ class Receiver:
             c.fh.flush()
             c.received += len(data)
         self.reply(seq, ST_OK, c.received)
+        if self.progress is not None:
+            self.progress(c.name, c.received, c.size)
 
     def _end(self, seq, body):
         sha = body[:32]

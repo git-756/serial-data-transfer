@@ -17,6 +17,9 @@ dependencies = [
 serial-xfer = "serial_data_transfer.serial_xfer:main"
 serial-loopback = "serial_data_transfer.loopback:main"
 
+[project.gui-scripts]
+serial-xfer-gui = "serial_data_transfer.gui:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8",

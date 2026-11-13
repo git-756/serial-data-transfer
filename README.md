@@ -1,5 +1,33 @@
 # Windows ⇔ Jetson シリアルファイル転送 (AE-TTL-232R)
 
+## かんたん操作（おすすめ）
+
+配線（下の「1. 配線」）が済んでいれば、次の2つで「**Jetson は常に受信待ち、Windows はアイコンから画面で送受信**」になります。
+
+### Jetson：常に待ち受けにする（初回のみ）
+```bash
+cd ~/756_project/serial-data-transfer
+./deploy/install-jetson-service.sh
+```
+- sudo のパスワードを聞かれます。以後は Jetson の起動時に自動で `serve` が動きます（最速設定、受信先は `~/share`）。
+- 設定を変えるとき: `ROOT=~/data BAUD=921600 RTSCTS=0 ./deploy/install-jetson-service.sh`（もう一度実行すると上書き）
+- ログ: `journalctl -u serial-xfer -f` / 停止: `sudo systemctl stop serial-xfer` / 削除: `./deploy/install-jetson-service.sh uninstall`
+- サービスが動いている間はポートを使っているので、Jetson 側から `put` / `get` するときは先に停止してください。
+
+### Windows：セットアップ（初回のみ。更新するときも同じ）
+1. [windows/setup.bat](windows/setup.bat) を保存します（GitHub のファイル画面の「Download raw file」ボタン）。
+2. 保存した `setup.bat` をダブルクリックします。次の処理を自動で行います（GitHub のログイン不要）。
+   uv のインストール → ツールのインストール/更新 → ショートカット作成 → 転送画面の起動
+   - 「Windows によって PC が保護されました」と出たら「詳細情報」→「実行」。
+3. 以後は、デスクトップの「**Jetson ファイル転送**」をダブルクリックするだけです。
+
+### Windows：転送画面の使い方
+- **送信**: 「ファイルを送信…」「フォルダを送信…」で、エクスプローラーの画面から選びます。一覧で開いている Jetson 側のフォルダに送られます。
+- エクスプローラーでファイルを右クリック →「送る」→「**Jetson へ送る**」でも送れます（確認のあと送信）。デスクトップのアイコンにドラッグ&ドロップしても同じです。
+- **受信**: 一覧で選び（Ctrl / Shift で複数選択。フォルダも可）、「選択したものを受信…」→ 保存先を選びます。
+- ポートは FTDI（AE-TTL-232R）を自動で選びます。速度と RTS/CTS は Jetson 側のサービスと同じ値にしてください（既定はどちらも 3000000 / RTS/CTS あり）。設定は自動で保存されます。
+- 転送中は「中止」で止められます。途中まで送ったファイルは、次に同じファイルを送ると続きから再開します。
+
 ## 1. 配線（最重要）
 
 AE-TTL-232R の 6 ピン端子（FTDI ケーブル互換）と Jetson 40 ピンヘッダ(J41)を **クロス接続** します。
