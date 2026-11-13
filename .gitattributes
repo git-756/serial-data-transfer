@@ -1,2 +1,3 @@
-*.bat text eol=crlf
+# .bat is stored as CRLF in the repo too (raw downloads from GitHub come out as-is)
+*.bat -text
 *.sh text eol=lf
