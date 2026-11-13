@@ -52,18 +52,12 @@ git archive --format=zip --prefix=serial-data-transfer/ -o dist/serial-data-tran
 
 | 方法 | Windows でやること | 使い方 |
 |---|---|---|
-| **A. wheel（おすすめ）** | `.whl` をコピーして `uv tool install .\serial_data_transfer-0.1.0-py3-none-any.whl` | どこからでも `serial-xfer ...` |
-| B. zip を展開 | zip をコピー → 展開 → `cd serial-data-transfer` → `uv sync` | フォルダ内で `uv run serial-xfer ...` |
-| C. git | `uv tool install git+https://github.com/git-756/serial-data-transfer`（private なので下記の認証が先に必要） | どこからでも `serial-xfer ...` |
+| **A. git（おすすめ）** | [Git for Windows](https://git-scm.com/download/win) を入れて（`winget install Git.Git`）、`uv tool install git+https://github.com/git-756/serial-data-transfer` | どこからでも `serial-xfer ...` |
+| B. wheel | `.whl` をコピーして `uv tool install .\serial_data_transfer-0.1.0-py3-none-any.whl` | どこからでも `serial-xfer ...` |
+| C. zip を展開 | zip をコピー → 展開 → `cd serial-data-transfer` → `uv sync` | フォルダ内で `uv run serial-xfer ...` |
 
-更新したときは、A なら新しい wheel で `uv tool install --force ...`、B なら展開し直して `uv sync`、C なら `uv tool install --force git+https://...`（または `uv tool upgrade serial-data-transfer`）。
-
-C の認証（Windows で初回のみ）: リポジトリは private なので、[Git for Windows](https://git-scm.com/download/win) を入れて GitHub にログインしておきます。
-どちらか一方で構いません。
-- `git clone https://github.com/git-756/serial-data-transfer` を一度実行し、ブラウザで出るログインを済ませる（Git Credential Manager が認証を保存します）
-- `winget install GitHub.cli` → `gh auth login` → `gh auth setup-git`
-
-SSH 鍵を GitHub に登録済みなら `git+ssh://git@github.com/git-756/serial-data-transfer.git` でも入ります。
+リポジトリは public なので、A に GitHub のログインは不要です（uv が内部で git を使うため、Git のインストールだけ必要）。
+更新したときは、A なら `uv tool upgrade serial-data-transfer`、B なら新しい wheel で `uv tool install --force ...`、C なら展開し直して `uv sync`。
 uv が使えない環境では、`src/serial_data_transfer/serial_xfer.py` 1 ファイルと `pip install pyserial` だけでも `python serial_xfer.py ...` で動きます。
 
 ## 4. 使い方
