@@ -21,7 +21,9 @@ cd ~/756_project/serial-data-transfer
    - 「Windows によって PC が保護されました」と出たら「詳細情報」→「実行」。
    - **会社のプロキシ**: 通常は Windows のプロキシ設定（ブラウザと同じ）を自動で使います。
      それで「[2/3]」で止まる場合は、`setup.bat` と同じフォルダに `proxy.txt` を作り、
-     プロキシのアドレスを 1 行だけ書いてください（例: `http://proxy.example.com:8080`）。
+     プロキシのアドレスを書いてください（例: `http://proxy.example.com:8080`）。
+     PowerShell 用の `$env:HTTPS_PROXY = "..."` やコマンドプロンプト用の `set HTTPS_PROXY=...` をそのまま貼っても、
+     中の `http://ホスト:ポート` だけを取り出して使います。
      コマンドプロンプトから `setup.bat http://proxy.example.com:8080` のように渡すこともできます。
      `proxy.txt` は自分の PC に置くだけにして、リポジトリには入れないでください（`.gitignore` 済み）。
 3. 以後は、デスクトップの「**Jetson ファイル転送**」をダブルクリックするだけです。

@@ -10,7 +10,7 @@ rem
 rem  Proxy (company network) is picked automatically, first match wins:
 rem    a. argument:            setup.bat http://proxy:port
 rem    b. HTTPS_PROXY that is already set
-rem    c. proxy.txt next to this file (one line: http://proxy:port)
+rem    c. proxy.txt next to this file (http://proxy:port; PowerShell/cmd lines also OK)
 rem    d. Windows proxy settings (the same ones the browser uses)
 rem ------------------------------------------------------------------
 setlocal
@@ -22,6 +22,7 @@ if not defined PX goto :no_proxy
 set "HTTP_PROXY=%PX%"
 set "HTTPS_PROXY=%PX%"
 echo Proxy: %PX%
+echo %PX%| findstr /r /i "^https*://" >nul || echo WARNING: the proxy should look like http://host:port
 goto :proxy_done
 :no_proxy
 echo Proxy: none - direct connection
@@ -65,7 +66,10 @@ if not "%~1"=="" set "PX=%~1"
 if defined PX goto :eof
 if defined HTTPS_PROXY set "PX=%HTTPS_PROXY%"
 if defined PX goto :eof
-if exist "%HERE%proxy.txt" for /f "usebackq eol=# tokens=*" %%p in ("%HERE%proxy.txt") do if not defined PX set "PX=%%p"
+rem proxy.txt may hold just the URL, or lines copied from PowerShell ($env:HTTPS_PROXY = "...")
+rem or cmd (set HTTPS_PROXY=...). Only the first http(s)://host:port in the file is used.
+set "PXFILE=%HERE%proxy.txt"
+if exist "%PXFILE%" for /f "usebackq delims=" %%p in (`powershell -NoProfile -Command "$t = Get-Content -LiteralPath $env:PXFILE -Raw; if ($t -match 'https?://[\w.\-]+(:\d+)?') { $Matches[0] }"`) do set "PX=%%p"
 if defined PX goto :eof
 for /f "usebackq delims=" %%p in (`powershell -NoProfile -Command "$u = [Uri]'https://github.com'; $p = [Net.WebRequest]::GetSystemWebProxy().GetProxy($u); if ($p.Host -ne $u.Host) { $p.AbsoluteUri.TrimEnd('/') }"`) do set "PX=%%p"
 goto :eof
