@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Windows proxy setting (local only, do not commit)
+windows/proxy.txt
+proxy.txt
