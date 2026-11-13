@@ -3,6 +3,8 @@ name = "serial-data-transfer"
 version = "0.1.0"
 description = "Windows ⇔ Jetson file transfer over UART (FT232R / AE-TTL-232R)"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "samurai-human-go@jetson", email = "git-756@users.noreply.github.com" }
 ]
