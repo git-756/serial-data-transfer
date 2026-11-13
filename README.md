@@ -44,20 +44,24 @@ uv run serial-xfer -h                         # 動作確認
 - 高速化したい場合: そのポートのプロパティ → ポートの設定 → 詳細設定 → **Latency Timer を 1 ms** に変更（既定 16ms で ACK 待ちが遅くなります）。
 
 ### Windows へのインストール（どれか1つ）
-Jetson 側で配布ファイルを作ります。`dist/` に wheel と zip ができます。
+リポジトリは public なので、**どの方法も GitHub のログインは不要**です。
+
+| 方法 | Windows でやること | 使い方 | 更新 |
+|---|---|---|---|
+| **A. ZIP の URL から（おすすめ、Git 不要）** | `uv tool install https://github.com/git-756/serial-data-transfer/archive/refs/heads/main.zip` | どこからでも `serial-xfer ...` | 同じコマンドに `--force` |
+| B. git から | [Git for Windows](https://git-scm.com/download/win) を入れて、`uv tool install git+https://github.com/git-756/serial-data-transfer` | どこからでも `serial-xfer ...` | `uv tool upgrade serial-data-transfer` |
+| C. clone / ダウンロード | `git clone https://github.com/git-756/serial-data-transfer.git`（または GitHub の「Code」→「Download ZIP」で落として展開）→ `cd serial-data-transfer` → `uv sync` | フォルダ内で `uv run serial-xfer ...` | `git pull`（ZIP なら落とし直し）→ `uv sync` |
+| D. Jetson から持っていく | 下の手順で作った `.whl` をコピーして `uv tool install .\serial_data_transfer-0.1.0-py3-none-any.whl` | どこからでも `serial-xfer ...` | 新しい wheel で `--force` |
+
+D の配布ファイルは Jetson 側で作ります（`dist/` に wheel と zip ができます）。
 ```bash
 uv build                                                      # dist/serial_data_transfer-0.1.0-py3-none-any.whl
 git archive --format=zip --prefix=serial-data-transfer/ -o dist/serial-data-transfer.zip HEAD
 ```
 
-| 方法 | Windows でやること | 使い方 |
-|---|---|---|
-| **A. git（おすすめ）** | [Git for Windows](https://git-scm.com/download/win) を入れて（`winget install Git.Git`）、`uv tool install git+https://github.com/git-756/serial-data-transfer` | どこからでも `serial-xfer ...` |
-| B. wheel | `.whl` をコピーして `uv tool install .\serial_data_transfer-0.1.0-py3-none-any.whl` | どこからでも `serial-xfer ...` |
-| C. zip を展開 | zip をコピー → 展開 → `cd serial-data-transfer` → `uv sync` | フォルダ内で `uv run serial-xfer ...` |
-
-リポジトリは public なので、A に GitHub のログインは不要です（uv が内部で git を使うため、Git のインストールだけ必要）。
-更新したときは、A なら `uv tool upgrade serial-data-transfer`、B なら新しい wheel で `uv tool install --force ...`、C なら展開し直して `uv sync`。
+**ログインを求められたら**: URL のつづりを確認してください（`transfer`。存在しない URL だと GitHub はログインを求めます）。
+会社のネットワークでは、uv のインストールと pyserial の取得に astral.sh / github.com / pypi.org への通信が必要です。
+プロキシ経由の場合は、PowerShell で `$env:HTTPS_PROXY = "http://<プロキシ>:<ポート>"` を設定してから実行します。
 uv が使えない環境では、`src/serial_data_transfer/serial_xfer.py` 1 ファイルと `pip install pyserial` だけでも `python serial_xfer.py ...` で動きます。
 
 ## 4. 使い方
