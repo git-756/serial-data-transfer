@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""ノイズ入り擬似回線で serial_xfer を検証する (実機不要)。 python3 test_serial_xfer.py"""
+"""ノイズ入り擬似回線で serial_xfer を検証する (実機不要)。
+
+  uv run pytest                  # 全部（約 4 分）
+  uv run pytest -m "not slow"    # 15% ノイズの長いテストを除く（約 45 秒）
+  uv run python tests/test_serial_xfer.py
+"""
 import os
 import queue
 import random
@@ -9,8 +14,9 @@ import tempfile
 import threading
 import time
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import serial_xfer as sx
+import pytest
+
+from serial_data_transfer import serial_xfer as sx
 
 
 class End:
@@ -130,6 +136,19 @@ def test_resume():
         print("PASS  %-28s" % "resume from .part")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_clean_line():
+    run("clean line", 0, 0, 0)
+
+
+def test_noisy_5pct():
+    run("5% corrupt, 5% drop, junk", 0.05, 0.05, 0.05)
+
+
+@pytest.mark.slow
+def test_noisy_15pct():
+    run("15% corrupt, 10% drop, junk", 0.15, 0.10, 0.10)
 
 
 if __name__ == "__main__":

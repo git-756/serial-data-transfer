@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Jetson UART loopback test (short Pin8 TXD to Pin10 RXD).
 
-Example: python3 loopback_test.py -p /dev/ttyTHS1 -b 115200 460800 921600
+Example: uv run serial-loopback -p /dev/ttyTHS1 -b 115200 460800 921600
 Writes random data at each baud rate, reads it back, and reports matches and speed.
 """
 import argparse

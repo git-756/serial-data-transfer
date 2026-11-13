@@ -1,16 +1,28 @@
 [project]
 name = "serial-data-transfer"
 version = "0.1.0"
-description = "Add your description here"
+description = "Windows ⇔ Jetson file transfer over UART (FT232R / AE-TTL-232R)"
 readme = "README.md"
 authors = [
     { name = "samurai-human-go@jetson", email = "git-756@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pyserial>=3.5",
+]
 
 [project.scripts]
-serial-data-transfer = "serial_data_transfer:main"
+serial-xfer = "serial_data_transfer.serial_xfer:main"
+serial-loopback = "serial_data_transfer.loopback:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: long noisy-line test (about 3.5 minutes)"]
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]

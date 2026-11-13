@@ -4,13 +4,14 @@
 serial_xfer.py  -  UART(シリアル)経由の双方向ファイル転送ツール
 Windows <-> Jetson (AE-TTL-232R / FT232R など) 用。同じファイルを両側で使います。
 
-必要: Python 3.7+ と pyserial  (pip install pyserial)
+uv でインストールすると serial-xfer コマンドになります。
+このファイル単体でも動きます (必要: Python 3.7+ と pyserial)。
 
 使い方 (例):
-  Jetson : python3 serial_xfer.py -p /dev/ttyTHS1 -b 115200 serve --root ~/share
-  Windows: python serial_xfer.py -p COM5 -b 115200 put  data.bin photos\\        # 送る
-           python serial_xfer.py -p COM5 -b 115200 get  result.csv --outdir .    # 受け取る
-           python serial_xfer.py -p COM5 -b 115200 ls                            # 一覧
+  Jetson : serial-xfer serve -p /dev/ttyTHS1 -b 115200 --root ~/share
+  Windows: serial-xfer put -p COM5 -b 115200 data.bin photos\\        # 送る
+           serial-xfer get -p COM5 -b 115200 result.csv --outdir .    # 受け取る
+           serial-xfer ls  -p COM5 -b 115200                          # 一覧
 
 プロトコル概要:
   フレーム = A5 5A | type(1) | len(2) | payload | CRC32(4)   (CRC32はtype+len+payloadに対して)

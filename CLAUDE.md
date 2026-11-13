@@ -4,10 +4,11 @@
 AE-TTL-232R（FT232RQ, USB-microB〜USB-A）でWindows PCとJetsonのGPIO UART(/dev/ttyTHS1)を接続し、
 双方向にファイルをやり取りする。
 
-## ファイル
-- `serial_xfer.py` : 転送ツール本体（Windows/Jetson共通、依存は pyserial のみ）。サブコマンド serve / put / get / ls
-- `test_serial_xfer.py` : ノイズ注入した擬似回線での自動テスト（実機不要）
-- `README.md` : 配線・セットアップ・使い方
+## ファイル（uv 管理。`uv sync` → `uv run serial-xfer ...`）
+- `src/serial_data_transfer/serial_xfer.py` : 転送ツール本体（Windows/Jetson共通、依存は pyserial のみ）。コマンド `serial-xfer`。サブコマンド serve / put / get / ls。単体ファイルとしても動く
+- `src/serial_data_transfer/loopback.py` : Pin8-Pin10 短絡ループバック試験。コマンド `serial-loopback`
+- `tests/test_serial_xfer.py` : ノイズ注入した擬似回線での自動テスト（実機不要）。`uv run pytest`（`-m "not slow"` で短縮）
+- `README.md` : 配線・セットアップ・使い方・Windows への配布方法（wheel / zip / git）
 
 ## 配線（確定事項）
 AE-TTL-232R TXD→Jetson Pin10(RXD) / RXD→Pin8(TXD) / RTS→Pin36(CTS) / CTS→Pin11(RTS) / GND→Pin6。
@@ -21,7 +22,7 @@ START(サイズ+SHA-256+名前) → DATA(offset付き) → END で、SHA-256一�
 GET要求のACKが落ちた場合は START受信を暗黙ACKとして扱う（修正済み）。
 
 ## 現状
-- 擬似回線テスト (`python3 test_serial_xfer.py`) は全て合格（フレーム約25%破損/欠落でも完走）。
+- 擬似回線テスト (`uv run pytest`) は全て合格（フレーム約25%破損/欠落でも完走）。
 - **実機（FT232R ⇔ Jetson UART）では未検証。**
 - 実機は Jetson AGX Orin Dev Kit（R39.2.1）。`/dev/ttyTHS1` = 3100000.serial（UART1、header Pin8/10 = PR.02/PR.03）。
 - 2026-11-10: dialout 追加済み、ポートは開ける。`loopback_test.py`（Pin8-Pin10 短絡）は 115200/460800/921600 とも **受信 0 バイト**。
