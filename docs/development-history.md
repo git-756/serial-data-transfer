@@ -80,7 +80,7 @@ Windows PC と Jetson を AE-TTL-232R（FT232R）でつなぎ、UART でファ�
 
 ### 8. Windows でインストールしようとしたらログインを求められた
 - **原因の見当**: 存在しない URL（例: `transfar` のようなつづり違い）にアクセスすると、GitHub はログインを求める。正しい URL なら、ログインなしで clone できることを確認した。
-- **会社の PC 向けの対応**: Git がなくても入れられるように、**ZIP の URL から直接インストール**する方法を推奨にした。
+- **Git やログインが使えない PC 向けの対応**: Git がなくても入れられるように、**ZIP の URL から直接インストール**する方法を推奨にした。
   ```
   uv tool install https://github.com/git-756/serial-data-transfer/archive/refs/heads/main.zip
   ```
@@ -130,7 +130,7 @@ Windows PC と Jetson を AE-TTL-232R（FT232R）でつなぎ、UART でファ�
 - **実機の検証**: FT232R を Jetson の USB に挿すと、Windows を使わずに `ttyTHS1` ⇔ `ttyUSB0` で両方向を試せる。
 - **高速化**: 1 Mbps を超えるなら `--rtscts` を使う。原因が overrun か線の品質かは、`TIOCGICOUNT` で区別できる。
 - **Windows で配る bat**: リポジトリにも CRLF で保存する（`*.bat -text`）。
-- **プロキシ**: uv は環境変数しか見ない。会社のプロキシ情報は、公開リポジトリに入れずローカルのファイルから読む。
+- **プロキシ**: uv は環境変数しか見ない。プロキシの情報は、公開リポジトリに入れずローカルのファイルから読む。
 - **GitHub がログインを求めてきたら**: まず URL のつづりを疑う。
 
 ## 残っている課題

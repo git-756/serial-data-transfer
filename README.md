@@ -19,7 +19,7 @@ cd ~/756_project/serial-data-transfer
 2. 保存した `setup.bat` をダブルクリックします。次の処理を自動で行います（GitHub のログイン不要）。
    uv のインストール → ツールのインストール/更新 → ショートカット作成 → 転送画面の起動
    - 「Windows によって PC が保護されました」と出たら「詳細情報」→「実行」。
-   - **会社のプロキシ**: 通常は Windows のプロキシ設定（ブラウザと同じ）を自動で使います。
+   - **プロキシ環境**: 通常は Windows のプロキシ設定（ブラウザと同じ）を自動で使います。
      それで「[2/3]」で止まる場合は、`setup.bat` と同じフォルダに `proxy.txt` を作り、
      プロキシのアドレスを書いてください（例: `http://proxy.example.com:8080`）。
      PowerShell 用の `$env:HTTPS_PROXY = "..."` やコマンドプロンプト用の `set HTTPS_PROXY=...` をそのまま貼っても、
@@ -95,7 +95,7 @@ git archive --format=zip --prefix=serial-data-transfer/ -o dist/serial-data-tran
 ```
 
 **ログインを求められたら**: URL のつづりを確認してください（`transfer`。存在しない URL だと GitHub はログインを求めます）。
-会社のネットワークでは、uv のインストールと pyserial の取得に astral.sh / github.com / pypi.org への通信が必要です。
+プロキシのあるネットワークでは、uv のインストールと pyserial の取得に astral.sh / github.com / pypi.org への通信が必要です。
 プロキシ経由の場合は、PowerShell で `$env:HTTPS_PROXY = "http://<プロキシ>:<ポート>"` を設定してから実行します（`setup.bat` はプロキシを自動で設定します）。
 uv が使えない環境では、`src/serial_data_transfer/serial_xfer.py` 1 ファイルと `pip install pyserial` だけでも `python serial_xfer.py ...` で動きます。
 
